@@ -58,12 +58,12 @@ template <typename K, typename M, typename H> const M &HashMap<K, M, H>::at(cons
 {
     // see static_cast/const_cast trick explained in find().
     return static_cast<const M &>(const_cast<HashMap<K, M, H> *>(this)->at(key));
-}// 返回对应key的value, const版本，不可修改，只可读取
+} // 返回对应key的value, const版本，不可修改，只可读取
 
 template <typename K, typename M, typename H> bool HashMap<K, M, H>::contains(const K &key) const noexcept
 {
     return find_node(key).second != nullptr;
-}// 判断是否包含key
+} // 判断是否包含key
 
 template <typename K, typename M, typename H> void HashMap<K, M, H>::clear() noexcept
 {
@@ -73,16 +73,16 @@ template <typename K, typename M, typename H> void HashMap<K, M, H>::clear() noe
         {
             auto trash = curr;
             curr = curr->next;
-            delete trash;//不符合RAII,以后可用智能指针代替
+            delete trash; // 不符合RAII,以后可用智能指针代替
         }
     }
     _size = 0;
-}// 清空哈希表，删除所有节点
+} // 清空哈希表，删除所有节点
 
 template <typename K, typename M, typename H> typename HashMap<K, M, H>::iterator HashMap<K, M, H>::find(const K &key)
 {
     return make_iterator(find_node(key).second);
-}// 查找key对应的节点，返回一个迭代器
+} // 查找key对应的节点，返回一个迭代器
 
 template <typename K, typename M, typename H>
 typename HashMap<K, M, H>::const_iterator HashMap<K, M, H>::find(const K &key) const
@@ -93,7 +93,7 @@ typename HashMap<K, M, H>::const_iterator HashMap<K, M, H>::find(const K &key) c
     // calls the overload above (and prevent infinite recursion).
     // Also note that we are calling the conversion operator in the iterator class!
     return static_cast<const_iterator>(const_cast<HashMap<K, M, H> *>(this)->find(key));
-}// 查找key对应的节点，返回一个const迭代器,只读不能修改
+} // 查找key对应的节点，返回一个const迭代器,只读不能修改
 
 template <typename K, typename M, typename H>
 std::pair<typename HashMap<K, M, H>::iterator, bool> HashMap<K, M, H>::insert(const value_type &value)
@@ -112,7 +112,7 @@ std::pair<typename HashMap<K, M, H>::iterator, bool> HashMap<K, M, H>::insert(co
 
     ++_size;
     return {make_iterator(temp), true};
-}// 插入一个键值对，如果key已存在则返回false，否则返回true
+} // 插入一个键值对，如果key已存在则返回false，否则返回true
 
 template <typename K, typename M, typename H>
 typename HashMap<K, M, H>::node_pair HashMap<K, M, H>::find_node(const K &key) const
@@ -131,7 +131,7 @@ typename HashMap<K, M, H>::node_pair HashMap<K, M, H>::find_node(const K &key) c
         curr = curr->next;
     }
     return {nullptr, nullptr}; // key not found at all.
-}// 查找key对应的节点，返回一个pair，包含前一个节点和当前节点
+} // 查找key对应的节点，返回一个pair，包含前一个节点和当前节点
 
 template <typename K, typename M, typename H> typename HashMap<K, M, H>::iterator HashMap<K, M, H>::begin() noexcept
 {
@@ -141,26 +141,26 @@ template <typename K, typename M, typename H> typename HashMap<K, M, H>::iterato
         return end();
     }
     return make_iterator(_buckets_array[index]);
-}// 返回一个迭代器，指向第一个非空桶的第一个节点
+} // 返回一个迭代器，指向第一个非空桶的第一个节点
 
 template <typename K, typename M, typename H> typename HashMap<K, M, H>::iterator HashMap<K, M, H>::end() noexcept
 {
     return make_iterator(nullptr);
-}// 返回一个迭代器，指向空节点
+} // 返回一个迭代器，指向空节点
 
 template <typename K, typename M, typename H>
 typename HashMap<K, M, H>::const_iterator HashMap<K, M, H>::begin() const noexcept
 {
     // see static_cast/const_cast trick explained in find().
     return static_cast<const_iterator>(const_cast<HashMap<K, M, H> *>(this)->begin());
-}// 返回一个const迭代器，指向第一个非空桶的第一个节点
+} // 返回一个const迭代器，指向第一个非空桶的第一个节点
 
 template <typename K, typename M, typename H>
 typename HashMap<K, M, H>::const_iterator HashMap<K, M, H>::end() const noexcept
 {
     // see static_cast/const_cast trick explained in find().
     return static_cast<const_iterator>(const_cast<HashMap<K, M, H> *>(this)->end());
-}// 返回一个const迭代器，指向空节点
+} // 返回一个const迭代器，指向空节点
 
 template <typename K, typename M, typename H> size_t HashMap<K, M, H>::first_not_empty_bucket() const noexcept
 {
@@ -168,7 +168,7 @@ template <typename K, typename M, typename H> size_t HashMap<K, M, H>::first_not
 
     auto found = find_if(_buckets_array.begin(), _buckets_array.end(), isNotNullptr);
     return found - _buckets_array.begin();
-}// 查找第一个非空桶的索引
+} // 查找第一个非空桶的索引
 
 template <typename K, typename M, typename H>
 typename HashMap<K, M, H>::iterator HashMap<K, M, H>::make_iterator(node *curr)
@@ -192,7 +192,7 @@ template <typename K, typename M, typename H> bool HashMap<K, M, H>::erase(const
     (prev ? prev->next : _buckets_array[index]) = node_to_erase->next;
     --_size;
     return true;
-}// 删除key对应的节点，如果不存在则返回false，存在则返回true
+} // 删除key对应的节点，如果不存在则返回false，存在则返回true
 
 template <typename K, typename M, typename H>
 typename HashMap<K, M, H>::iterator HashMap<K, M, H>::erase(typename HashMap<K, M, H>::const_iterator pos)
@@ -252,7 +252,36 @@ template <typename K, typename M, typename H> void HashMap<K, M, H>::rehash(size
 
 // Milestone 2 (optional) - iterator-based constructors
 // You will have to type in your own function headers in both the .cpp and .h files.
+template <typename K, typename M, typename H>
+template <typename InputIt>
+HashMap<K, M, H>::HashMap(InputIt first, InputIt last, size_t bucket_count, const H &hash) : HashMap(bucket_count, hash)
+{
+    for (auto it = first; it != last; it++)
+    {
+        this->insert(*it); // insert will handle the case where the key already exists
+    }
+}
 
+// initializer list
+template <typename K, typename M, typename H>
+HashMap<K, M, H>::HashMap(std::initializer_list<value_type> init, size_t bucket_count, const H &hash): HashMap(bucket_count, hash)
+{
+    for (auto it : init)
+    {
+        this->insert(it); // insert will handle the case where the key already exists
+    }
+}
+/*
+template <typename K, typename M, typename H>
+HashMap<K, M, H>::HashMap(std::initializer_list<value_type> init, size_t bucket_count, const H &hash):
+HashMap(bucket_count, hash)
+{
+    for (auto it : init)
+    {
+        this->insert(it);
+    }
+}
+*/
 // Milestone 3 (required) - operator overloading
 // The function headers are provided for you.
 template <typename K, typename M, typename H> M &HashMap<K, M, H>::operator[](const K &key)
