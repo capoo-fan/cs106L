@@ -4,6 +4,7 @@
  */
 
 #include "hashmap.h"
+#include <sstream>
 
 // See milestone 2 about delegating constructors (when HashMap is called in the initalizer list below)
 template <typename K, typename M, typename H> HashMap<K, M, H>::HashMap() : HashMap{kDefaultBuckets}
@@ -264,7 +265,8 @@ HashMap<K, M, H>::HashMap(InputIt first, InputIt last, size_t bucket_count, cons
 
 // initializer list
 template <typename K, typename M, typename H>
-HashMap<K, M, H>::HashMap(std::initializer_list<value_type> init, size_t bucket_count, const H &hash): HashMap(bucket_count, hash)
+HashMap<K, M, H>::HashMap(std::initializer_list<value_type> init, size_t bucket_count, const H &hash)
+    : HashMap(bucket_count, hash)
 {
     for (auto it : init)
     {
@@ -306,6 +308,7 @@ template <typename K, typename M, typename H> M &HashMap<K, M, H>::operator[](co
 #pragma GCC diagnostic pop
 
     // END STARTER CODE
+    return insert({key, M{}}).first->second; // M{}是默认初始化对象
 
     // complete the function implementation (1 line of code)
     // isn't it funny how the bad starter code is longer than the correct answer?
@@ -315,7 +318,14 @@ template <typename K, typename M, typename H> bool operator==(const HashMap<K, M
 {
 
     // BEGIN STARTER CODE (remove these lines before you begin)
-    (void)lhs, (void)rhs;
+    if (lhs.size() != rhs.size())
+        return false;
+    for (auto it : lhs)
+    {
+        auto [key, value] = *it;
+        if (rhs.at(key) == rhs.end() || value != rhs.at(key))
+            return false;
+    }
     return true;
     // END STARTER CODE
 
@@ -326,8 +336,7 @@ template <typename K, typename M, typename H> bool operator!=(const HashMap<K, M
 {
 
     // BEGIN STARTER CODE (remove these lines before you begin)
-    (void)lhs, (void)rhs;
-    return true;
+    return !(lhs == rhs); // use the operator== function
     // END STARTER CODE
 
     // complete the function implementation (1 line of code)
@@ -337,7 +346,13 @@ template <typename K, typename M, typename H> std::ostream &operator<<(std::ostr
 {
 
     // BEGIN STARTER CODE (remove these lines before you begin)
-    (void)rhs;
+    os << "{ ";
+    std::istringstream ss;
+    for (auto it : rhs)
+    {
+        ss << it->first << ":" << it->second << " ";
+    }
+    os << "}";
     return os;
     // END STARTER CODE
 
@@ -348,5 +363,60 @@ template <typename K, typename M, typename H> std::ostream &operator<<(std::ostr
 // You will have to type in your own function headers in both the .cpp and .h files.
 
 // provide the function headers and implementations (~35 lines of code)
+//
+template <typename K, typename M, typename H>
+HashMap<K, M, H>::HashMap(const HashMap<K, M, H> &other) : HashMap(other.bucket_count(), other._hash_function)
+{
+    for (const auto &[key, value] : other)
+    {
+        insert({key, value});
+    }
+} // 拷贝构造函数
 
+template <typename K, typename M, typename H>
+HashMap<K, M, H> &HashMap<K, M, H>::operator=(const HashMap<K, M, H> &other)
+{
+    if (this != &other) // 防止自赋值
+    {
+        this->clear();                                        // 清空当前哈希表
+        _size = other._size;                                  // 复制大小
+        _hash_function = other._hash_function;                // 复制哈希函数
+        _buckets_array.resize(other.bucket_count(), nullptr); // 调整桶的数量
+
+        for (const auto &[key, value] : other)
+        {
+            insert({key, value}); // 插入每个键值对
+        }
+    }
+    return *this; // 返回当前对象的引用
+}
+// 复制赋值运算符
+
+template <typename K, typename M, typename H>
+HashMap<K, M, H>::HashMap(HashMap<K, M, H> &&other) noexcept
+    : _size(other._size),                              // 使用初始化列表
+      _hash_function(std::move(other._hash_function)), // 移动初始化
+      _buckets_array(std::move(other._buckets_array))  // 移动初始化
+{
+    // 重置 other 到有效状态
+    other._size = 0;
+    other._buckets_array.clear();
+    other._buckets_array.resize(kDefaultBuckets, nullptr); // 确保有效状态
+} // 移动构造函数
+
+template <typename K, typename M, typename H>
+HashMap<K, M, H> &HashMap<K, M, H>::operator=(HashMap<K, M, H> &&other) noexcept
+{
+    if (this != &other) // 防止自赋值
+    {
+        this->clear();                                    // 清空当前哈希表
+        _size = other._size;                              // 复制大小
+        _hash_function = std::move(other._hash_function); // 移动哈希函数
+        _buckets_array = std::move(other._buckets_array); //
+        other._size = 0;
+        other._buckets_array.clear();
+        other._buckets_array.resize(kDefaultBuckets, nullptr); // 确保有效状态
+    }
+    return *this; // 返回当前对象的引用
+}// 移动赋值运算符
 /* end student code */
